@@ -379,7 +379,13 @@ details>summary{cursor:pointer;font-weight:600;padding:4px 0}
 .kbd-hint{font-size:.78rem;color:var(--muted)}
 kbd{font-family:ui-monospace,Consolas,monospace;font-size:.78em;border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:5px;padding:0 5px;background:var(--surface)}
 /* flashcards */
-.fc-scene{perspective:1400px;margin:4px 0 14px}
+.fc-scene{perspective:1400px;margin:4px 0 14px;position:relative;transition:transform .2s ease}
+#flashcard{touch-action:pan-y}   /* vertical scrolling stays with the page; sideways drags are swipes */
+.fc-scene.sw-left::after,.fc-scene.sw-right::after{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:3;padding:4px 14px;border-radius:99px;font-weight:700;font-size:.9rem;pointer-events:none}
+.fc-scene.sw-left::after{content:"✗ Don’t know";background:var(--bad);color:#fff}
+.fc-scene.sw-right::after{content:"✓ Know";background:var(--ok);color:#fff}
+.fc-scene.sw-left .fc-face{box-shadow:0 0 0 3px var(--bad)}
+.fc-scene.sw-right .fc-face{box-shadow:0 0 0 3px var(--ok)}
 .fc{display:grid;cursor:pointer;transition:transform var(--dur-flip) cubic-bezier(.3,.7,.3,1);transform-style:preserve-3d;border-radius:var(--radius-lg);outline-offset:4px}
 .fc.flipped{transform:rotateY(180deg)}
 .fc-face{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:28px 24px;min-height:230px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
@@ -536,7 +542,7 @@ dialog::backdrop{background:rgba(10,12,14,.5)}
    (esc) before the small inline subset is applied (fmt).
    ===================================================================== */
 var LS = 'studytool:';
-var VERSION = '5.0';
+var VERSION = '5.1';
 
 /* ---------- utilities ---------- */
 function $(sel, root) { return (root || document).querySelector(sel); }
@@ -1921,7 +1927,9 @@ function viewCard(s, cur) {
     '<span class="sr-only" id="fc-help">Press Space to flip.</span></div>';
   h += '<div class="row" style="margin-bottom:12px;min-height:34px">';
   if (t.hint && !fl) h += cur.hint ? '<p class="small"><strong>Hint:</strong> ' + fmt(t.hint) + ' <span class="muted">(a hinted "Got it" counts as Shaky)</span></p>' : '<button class="btn sm ghost" data-action="card-hint">Show hint <kbd>H</kbd></button>';
-  h += '<span class="spacer"></span>' + (fl ? itemDocLink(t) : '<span class="kbd-hint"><kbd>Space</kbd> flip' + (cur.revealed ? '' : ' · grade after flipping') + '</span>') + '</div>';
+  var touch = window.matchMedia && matchMedia('(pointer: coarse)').matches;
+  var gradeHint = touch ? 'Swipe <b>←</b> don’t know · <b>→</b> know' : '<kbd>←</kbd> don’t know · <kbd>→</kbd> know';
+  h += '<span class="spacer"></span>' + (fl ? itemDocLink(t) : '') + '<span class="kbd-hint" id="swipe-hint">' + (cur.revealed ? gradeHint : (touch ? 'Tap to flip, then ' : '<kbd>Space</kbd> flips, then ') + gradeHint.charAt(0).toLowerCase() + gradeHint.slice(1)) + '</span></div>';
   /* grading needs the answer to have been seen: until the first flip, only a flip button is offered */
   if (!cur.revealed) return h + '<div class="actionbar"><div class="grade-row"><button class="btn primary" data-action="flip" id="g-flip" style="grid-column:1/-1">Flip to see the answer<small style="color:inherit">Space, 1–3 or ← → also flip; grade after</small></button></div></div>';
   h += '<div class="actionbar"><div class="grade-row"><button class="btn g-miss" data-action="grade" data-g="wrong" id="g-miss">✗ Missed it<small>1 · ←</small></button>' +
@@ -2067,6 +2075,39 @@ function gradeCard(outcome) {
   if (outcome === 'right' && cur.hint) outcome = 'soft';
   cur.answered = true; setOutcome(outcome); next();
 }
+/* Flashcards: swipe the card left (Missed / don't know) or right (Got it / know), like ← and →.
+   Before the answer has been seen, a swipe flips the card first (gradeCard's rule). A short drag does nothing; vertical drags scroll. */
+var SW = null, swipeEndedAt = 0;
+document.addEventListener('pointerdown', function (e) {
+  var c = e.target.closest && e.target.closest('#flashcard');
+  SW = c && !(e.button > 0) ? { el: c, x: e.clientX, y: e.clientY, dx: 0, on: false, id: e.pointerId } : null;
+});
+document.addEventListener('pointermove', function (e) {
+  if (!SW || e.pointerId !== SW.id) return;
+  var dx = e.clientX - SW.x, dy = e.clientY - SW.y;
+  if (!SW.on) {
+    if (Math.abs(dy) > 14 && Math.abs(dy) > Math.abs(dx)) { SW = null; return; }   /* a scroll, not a swipe */
+    if (Math.abs(dx) < 14) return;
+    SW.on = true; try { SW.el.setPointerCapture(e.pointerId); } catch (er) {}
+  }
+  SW.dx = dx;
+  var scene = SW.el.parentNode;
+  scene.style.transition = 'none'; scene.style.transform = 'translateX(' + dx + 'px) rotate(' + (dx / 28) + 'deg)';
+  scene.classList.toggle('sw-left', dx < -40); scene.classList.toggle('sw-right', dx > 40);
+});
+function swipeEnd(e) {
+  if (!SW || (e && e.pointerId !== SW.id)) return;
+  var s = SW; SW = null; if (!s.on) return;
+  var scene = s.el.parentNode, limit = Math.min(110, scene.offsetWidth * 0.28);
+  scene.style.transition = ''; scene.style.transform = ''; scene.classList.remove('sw-left', 'sw-right');
+  swipeEndedAt = Date.now();
+  if (e.type === 'pointerup' && Math.abs(s.dx) >= limit) gradeCard(s.dx < 0 ? 'wrong' : 'right');
+}
+document.addEventListener('pointerup', swipeEnd);
+document.addEventListener('pointercancel', swipeEnd);
+document.addEventListener('click', function (e) {   /* the click that ends a swipe must not also flip the card */
+  if (Date.now() - swipeEndedAt < 400 && e.target.closest && e.target.closest('#flashcard')) { e.stopPropagation(); e.preventDefault(); }
+}, true);
 function retryInfo(s) {   /* results: first try wrong, first try soft (guess / hint / shaky) */
   var ids = Object.keys(s.first);
   var wrong = ids.filter(function (k) { return s.first[k] === 'wrong'; }), soft = ids.filter(function (k) { return s.first[k] === 'soft'; });
@@ -3241,7 +3282,7 @@ function showTerm(id) {
   openModal(plain(t.term), '<p>' + fmt(t.definition) + '</p>' + (t.aliases && t.aliases.length ? '<p class="small muted">Also: ' + esc(t.aliases.join(', ')) + '</p>' : '') + '<div class="row">' + pill(statusOf(id)) + starItemBtn(t) + copyAiBtn(t) + '<span class="spacer"></span>' + itemDocLink(t) + '</div>', '<button class="btn primary" data-action="modal-close">Close</button>');
 }
 function showHelp() {
-  var rows = [['Flashcards', ''], ['Space / Enter', 'Flip card (flip before grading; until then 1–3 and ← → also flip)'], ['1 or ←', 'Missed it'], ['2', 'Shaky (right but unsure)'], ['3 or →', 'Got it'], ['H', 'Show hint'], ['S', 'Star current item'],
+  var rows = [['Flashcards', ''], ['Space / Enter', 'Flip card (flip before grading; until then 1–3 and ← → also flip)'], ['1 or ←', 'Missed it'], ['2', 'Shaky (right but unsure)'], ['3 or →', 'Got it'], ['Swipe ← / → (touch)', 'Missed it / Got it (flips first if the answer wasn\'t shown yet)'], ['H', 'Show hint'], ['S', 'Star current item'],
     ['Questions', ''], ['1 – 9', 'Choose option'], ['Enter', 'Check (select-all) / next'], ['H', 'Show concepts (Learn hint)'], ['G', 'Mark a correct answer as guessed'], ['R', 'Read about this (when there is a reading; in Quiz after answering)'], ['N or →', 'Next question (after answering)'], ['↑ ↓', 'Move between options'],
     ['Reading (Learn)', ''], ['Enter / Space', 'Start the questions'],
     ['Round checkpoint (every 7 answers)', ''], ['Enter / Space', 'Keep going'], ['Esc', 'End session'],

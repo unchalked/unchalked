@@ -1,11 +1,10 @@
 {
   "launcher": "1.2",
-  "app": "5.0",
+  "app": "5.1",
   "appFile": "demo.html",
   "files": ["icon-180.png", "icon-192.png", "icon-512.png", "manifest.webmanifest", "DECK_PROMPT.md"],
   "notes": [
-    "UnChalked now lives at github.com/unchalked/unchalked: updates and the demo come from there",
-    "\"New here? Get your own UnChalked\" guide for first-time visitors",
-    "Share messages tell friends without UnChalked where to get it"
+    "Flashcards: swipe a card left (don't know) or right (know) on your phone; on a computer use the left and right arrow keys",
+    "The card shows a red or green label while you swipe, and hints under it say how to grade"
   ]
 }

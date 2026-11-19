@@ -73,4 +73,4 @@ You are guiding a student through setting up UnChalked. They do every click them
 
 Questions or ideas: use **Send feedback** in UnChalked.
 
-Current version: launcher 1.2 · app 5.0
+Current version: launcher 1.2 · app 5.1
