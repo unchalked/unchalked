@@ -1,0 +1,11 @@
+{
+  "launcher": "1.2",
+  "app": "5.0",
+  "appFile": "demo.html",
+  "files": ["icon-180.png", "icon-192.png", "icon-512.png", "manifest.webmanifest", "DECK_PROMPT.md"],
+  "notes": [
+    "UnChalked now lives at github.com/unchalked/unchalked: updates and the demo come from there",
+    "\"New here? Get your own UnChalked\" guide for first-time visitors",
+    "Share messages tell friends without UnChalked where to get it"
+  ]
+}

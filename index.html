@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-title" content="UnChalked">
+<meta name="studytool-launcher" content="1">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#f5f4ef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#131518" media="(prefers-color-scheme: dark)">
+<title>UnChalked</title>
+<style>
+:root{
+  --bg:#f5f4ef;--surface:#fff;--surface-2:#efeee8;--border:#e0ded5;--text:#1d2126;--muted:#5d646d;
+  --accent:#2a6685;--accent-ink:#fff;--accent-soft:#e2edf3;--ok:#23704a;--ok-soft:#e1f1e7;--warn:#8a5d00;--warn-soft:#fbf0d6;--bad:#b13e30;--bad-soft:#f8e4e0;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(30,30,20,.06);color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#131518;--surface:#1c1f23;--surface-2:#24282d;--border:#2f343a;--text:#e4e5e2;--muted:#9ba2aa;
+  --accent:#6fb0d2;--accent-ink:#0d1a21;--accent-soft:#1d3240;--ok:#6cc596;--ok-soft:#173326;--warn:#e7bf64;--warn-soft:#352a10;--bad:#ee8a7a;--bad-soft:#3a1e1a;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#131518;--surface:#1c1f23;--surface-2:#24282d;--border:#2f343a;--text:#e4e5e2;--muted:#9ba2aa;
+  --accent:#6fb0d2;--accent-ink:#0d1a21;--accent-soft:#1d3240;--ok:#6cc596;--ok-soft:#173326;--warn:#e7bf64;--warn-soft:#352a10;--bad:#ee8a7a;--bad-soft:#3a1e1a;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;overflow-wrap:break-word}
+.wrap{max-width:720px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) calc(32px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.logo{flex:none;width:40px;height:40px;border-radius:10px;object-fit:cover;background:#111}
+.top .t{flex:1;min-width:0}
+h1{font-size:1.45rem;line-height:1.2;margin:0}
+.muted{color:var(--muted)}.small{font-size:.875rem}.tiny{font-size:.78rem}
+#status{margin:2px 0 0}
+.btn{flex:none;font:inherit;font-size:.9rem;font-weight:560;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{color:var(--bad)}
+.btn.sm{font-size:.82rem;padding:5px 10px}
+.btn:disabled{opacity:.6;cursor:default}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+.syncbar{display:flex;align-items:center;gap:10px;margin:0 0 16px;padding:8px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--border);font-size:.86rem}
+.syncbar .dot{flex:none;width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.syncbar.on .dot{background:var(--ok)}
+.syncbar.err .dot{background:var(--warn)}
+.syncbar .txt{flex:1;min-width:0;color:var(--muted)}
+.syncbar .txt b{color:var(--text);font-weight:600}
+.list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.item{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.card{display:block;text-decoration:none;color:inherit;padding:14px 16px 10px}
+.card:active{background:var(--surface-2)}
+.acts{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 12px}
+.btn.upd{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.pill.shared{background:var(--surface-2);color:var(--text)}
+.more-row{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 12px;margin-top:-4px}
+.btn.icon{padding:5px 10px;letter-spacing:.1em}
+.checklist,.updbar{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:14px 16px;margin:0 0 14px}
+.updbar{border-color:var(--accent);background:var(--accent-soft)}
+.checklist h2,.updbar h2{font-size:1rem;margin:0 0 8px}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.steps li{display:flex;gap:10px;align-items:flex-start}
+.steps .n{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:.8rem;font-weight:700;background:var(--surface-2);color:var(--muted)}
+.steps li.done .n{background:var(--ok-soft);color:var(--ok)}
+.steps li.done b{text-decoration:line-through;color:var(--muted)}
+.steps p{margin:2px 0 6px;font-size:.86rem;color:var(--muted)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.linkbtn{background:none;border:0;padding:0;font:inherit;color:var(--accent);text-decoration:underline;cursor:pointer}
+.updbar ul{margin:4px 0 10px;padding-left:1.2em;font-size:.88rem}
+.course{font-size:.75rem;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:0 0 2px}
+.card h2{font-size:1.08rem;line-height:1.3;margin:0 0 6px;color:var(--text)}
+.counts{margin:0 0 8px;font-size:.88rem;color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.pill{display:inline-flex;align-items:center;font-size:.76rem;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
+.pill.ver{background:var(--accent-soft);color:var(--accent)}
+.pill.done{background:var(--ok-soft);color:var(--ok)}
+.pill.new{background:var(--warn-soft);color:var(--warn)}
+.file{margin:8px 0 0;font-size:.76rem;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere}
+.add{display:flex;width:100%;align-items:center;gap:12px;text-align:left;font:inherit;cursor:pointer;background:none;color:var(--accent);border:1.5px dashed var(--border);border-radius:14px;padding:14px 16px;font-weight:600;margin-top:12px}
+.add .plus{flex:none;width:32px;height:32px;border-radius:9px;background:var(--accent-soft);display:grid;place-items:center;font-size:1.3rem;line-height:1}
+.add small{display:block;font-weight:400;color:var(--muted);font-size:.8rem;margin-top:2px}
+.note{background:var(--surface);border:1px dashed var(--border);border-radius:14px;padding:14px 16px;margin:0}
+footer{margin-top:22px}
+footer a,.dlg a{color:var(--accent)}
+dialog{border:0;padding:0;border-radius:16px;background:var(--surface);color:var(--text);width:min(600px,calc(100% - 24px));max-height:calc(100% - 24px);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(10,12,14,.5)}
+.dlg{display:flex;flex-direction:column;max-height:calc(100vh - 24px)}
+.dlg-head{display:flex;align-items:center;gap:8px;padding:14px 16px 10px;border-bottom:1px solid var(--border)}
+.dlg-head h2{flex:1;margin:0;font-size:1.1rem}
+.x{background:none;border:0;font:inherit;font-size:1.1rem;color:var(--muted);cursor:pointer;padding:6px 8px;border-radius:8px}
+.dlg-body{padding:12px 16px 16px;overflow:auto}
+.dlg-body p{margin:.5em 0}
+.dlg-body ol{padding-left:1.2em;margin:.5em 0}
+.dlg-body li{margin:.25em 0}
+.dlg-foot{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--border)}
+label.f{display:block;font-weight:600;font-size:.88rem;margin:10px 0 4px}
+input[type=text],input[type=password],textarea{width:100%;font:inherit;font-size:.92rem;padding:9px 11px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text)}
+textarea{min-height:150px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.8rem}
+.seg{display:flex;gap:6px;margin:4px 0 8px}
+.seg button[aria-pressed=true]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.msg{border-radius:10px;padding:10px 12px;margin:10px 0 0;font-size:.88rem}
+.msg.ok{background:var(--ok-soft);color:var(--ok)}
+.msg.bad{background:var(--bad-soft);color:var(--bad)}
+.msg.warn{background:var(--warn-soft);color:var(--warn)}
+.msg ul{margin:4px 0 0;padding-left:1.2em}
+.choice{display:flex;gap:8px;align-items:flex-start;margin:6px 0;font-size:.9rem}
+.choice input{margin-top:4px}
+.choice small{display:block;color:var(--muted)}
+.summary{background:var(--surface-2);border-radius:10px;padding:10px 12px;margin:10px 0 0;font-size:.88rem}
+.summary b{display:block;font-size:.98rem}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <img class="logo" src="icon-192.png" alt="" width="40" height="40">
+    <div class="t">
+      <h1>UnChalked</h1>
+      <p id="status" class="muted small" role="status">Loading…</p>
+      <button type="button" class="linkbtn tiny" id="newhere-btn" hidden>New here? Get your own UnChalked</button>
+    </div>
+    <button type="button" class="btn" id="refresh">Refresh</button>
+  </header>
+  <section class="updbar" id="updbar" hidden aria-live="polite"></section>
+  <section class="checklist" id="checklist" hidden aria-labelledby="cl-h"></section>
+  <div class="syncbar" id="syncbar"><span class="dot" aria-hidden="true"></span><span class="txt" id="sync-txt"></span><button type="button" class="btn sm" id="sync-btn">Set up</button></div>
+  <ul class="list" id="list"></ul>
+  <p class="note small muted" id="empty" hidden></p>
+  <button type="button" class="add" id="add-deck"><span class="plus" aria-hidden="true">+</span><span>Add a deck<small>Paste the deck JSON an AI made, or choose a saved .html file. It goes live here in about a minute.</small></span></button>
+  <footer class="tiny muted">
+    <p>Any HTML file in the repo shows up here (files starting with “_” are hidden). <a id="repo-link" href="#">Open the repo on GitHub</a></p>
+    <p>Ideas or problems? <a id="feedback-link" href="#">✉ Send feedback</a> · <button type="button" class="linkbtn" id="newhere-foot">Get your own UnChalked</button> · <span id="ver-line"></span></p>
+  </footer>
+</main>
+
+<dialog id="dlg-token" aria-labelledby="tok-h"><div class="dlg">
+  <div class="dlg-head"><h2 id="tok-h">GitHub token</h2><button type="button" class="x" data-close aria-label="Close">✕</button></div>
+  <div class="dlg-body" id="tok-body"></div>
+  <div class="dlg-foot" id="tok-foot"></div>
+</div></dialog>
+
+<dialog id="dlg-new" aria-labelledby="new-h"><div class="dlg">
+  <div class="dlg-head"><h2 id="new-h">Get your own UnChalked</h2><button type="button" class="x" data-close aria-label="Close">✕</button></div>
+  <div class="dlg-body" id="new-body"></div>
+  <div class="dlg-foot"><button type="button" class="btn" data-close>Close</button><a class="btn primary" id="new-tpl" target="_blank" rel="noopener" href="#">Use this template</a></div>
+</div></dialog>
+
+<dialog id="dlg-add" aria-labelledby="add-h"><div class="dlg">
+  <div class="dlg-head"><h2 id="add-h">Add a deck</h2><button type="button" class="x" data-close aria-label="Close">✕</button></div>
+  <div class="dlg-body" id="add-body"></div>
+  <div class="dlg-foot" id="add-foot"></div>
+</div></dialog>
+
+<script>
+(function () {
+  'use strict';
+  var CACHE = 'launcher:v1', SYNC = 'studytool:sync', DEFAULT_REPO = 'unchalked/unchalked', GH = 'https://api.github.com';
+  var GIST_DESC = 'Study Tool progress sync (managed by the app)', GIST_META = 'studytool-sync.json';   /* same names the app uses, so every version finds the same Gist */
+  var $ = function (id) { return document.getElementById(id); };
+  var LOCAL_OK = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//i;   /* plain-http links allowed only for local testing */
+
+  function repoName() {
+    var q = new URLSearchParams(location.search).get('repo');
+    if (q && /^[\w.-]+\/[\w.-]+$/.test(q)) return q;
+    var h = location.hostname;
+    if (/\.github\.io$/i.test(h)) {
+      var owner = h.split('.')[0], seg = location.pathname.split('/').filter(Boolean)[0];
+      return seg && !/\.html?$/i.test(seg) ? owner + '/' + seg : owner + '/' + h;
+    }
+    return DEFAULT_REPO;
+  }
+  var REPO = repoName(), BRANCH = 'main';
+  var LAUNCHER_VERSION = '1.2';
+  var UPSTREAM = (function () { var q = new URLSearchParams(location.search).get('upstream'); return q && LOCAL_OK.test(q) ? q : 'https://unchalked.github.io/unchalked/'; })();   /* the UnChalked template this site follows for updates */
+  var IS_UPSTREAM = REPO.toLowerCase() === 'unchalked/unchalked' || new URL('./', location.href).href === UPSTREAM;
+  $('repo-link').href = 'https://github.com/' + REPO;
+  /* feedback address assembled at run time so it never sits in the file as plain text for scrapers */
+  $('feedback-link').href = 'mailto:' + ['UnChalked.help', 'gmail.com'].join('@') + '?subject=' + encodeURIComponent('UnChalked suggestion') + '&body=' + encodeURIComponent('\n\n\n(For context, please keep this:)\nFrom: the UnChalked launcher');
+  /* lets every study file on this site show a "‹ Decks" button back to this page */
+  /* several sites can share one origin (name.github.io/a and /b): every saved key below is per repository, and decks pick the launcher in their own folder */
+  CACHE = 'launcher:v1:' + REPO;
+  try {
+    var me = location.href.split('#')[0].split('?')[0], ls = JSON.parse(localStorage.getItem('studytool:launchers') || '[]');
+    ls = (Array.isArray(ls) ? ls : []).filter(function (u) { return u !== me; }); ls.unshift(me);
+    localStorage.setItem('studytool:launchers', JSON.stringify(ls.slice(0, 10)));
+    localStorage.setItem('studytool:launcher', me);   /* older decks read this single key */
+  } catch (e) {}
+
+  function load() { try { var c = JSON.parse(localStorage.getItem(CACHE)); return c && c.files ? c : null; } catch (e) { return null; } }
+  function save(c) { try { localStorage.setItem(CACHE, JSON.stringify(c)); } catch (e) {} }
+  function syncCfg() { try { var c = JSON.parse(localStorage.getItem(SYNC)); return c && typeof c.token === 'string' && c.token ? c : null; } catch (e) { return null; } }
+  function progressOf(id) {
+    var out = { answers: 0, last: 0, mastered: 0 };
+    try {
+      var p = JSON.parse(localStorage.getItem('studytool:' + id + ':progress'));
+      var items = p && p.items ? p.items : {};
+      Object.keys(items).forEach(function (k) {
+        var r = items[k] || {};
+        out.answers += +r.seen || 0;
+        if ((+r.lastAt || 0) > out.last) out.last = +r.lastAt;
+        if ((+r.streak || 0) >= 2) out.mastered++;
+      });
+    } catch (e) {}
+    return out;
+  }
+  function ago(t) {
+    var s = (Date.now() - t) / 1000;
+    if (s < 90) return 'just now';
+    if (s < 3600) return Math.round(s / 60) + ' min ago';
+    if (s < 86400) return Math.round(s / 3600) + ' h ago';
+    var d = Math.round(s / 86400);
+    return d === 1 ? 'yesterday' : d < 30 ? d + ' days ago' : new Date(t).toLocaleDateString();
+  }
+  function plain(s) { return String(s == null ? '' : s).replace(/\*\*|`/g, '').replace(/(^|\s)\*(\S[^*]*?)\*/g, '$1$2'); }
+  function plural(n, w) { return n + ' ' + w + (n === 1 ? '' : 's'); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function hash(s) { var h = 0x811c9dc5; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(16); }
+  function vnum(v) { var p = String(v || '0').split('.'); return (+p[0] || 0) * 1000 + (+p[1] || 0); }
+
+  var DECK_RE = /(<script type="application\/json" id="deck-data">)([\s\S]*?)(<\/script>)/;
+  function deckOf(text) { var m = DECK_RE.exec(text); if (!m) return null; try { return JSON.parse(m[2]); } catch (e) { return null; } }
+  function parse(name, text) {
+    var v = text.match(/var VERSION = '([^']+)'/);
+    var t = text.match(/<title>([^<]*)<\/title>/);
+    var info = { title: t ? t[1].trim() : name, version: v ? v[1] : '' };
+    var d = deckOf(text);
+    if (!d) { info.other = true; return info; }
+    var meta = d.meta || {};
+    info.id = meta.id || ''; info.title = plain(meta.title) || info.title; info.course = plain(meta.course);
+    info.updated = meta.updated || ''; info.mastery = meta.mastery || '';
+    ['chapters', 'objectives', 'terms', 'questions'].forEach(function (k) { info[k] = Array.isArray(d[k]) ? d[k].length : 0; });
+    var sf = meta.sharedFrom;
+    if (sf && typeof sf.url === 'string' && (/^https:\/\//.test(sf.url) || LOCAL_OK.test(sf.url))) info.sharedFrom = { url: sf.url, deckHash: String(sf.deckHash || '') };
+    return info;
+  }
+  /* a deck's fingerprint, ignoring where it was shared from, so a copy can tell when its source changed */
+  function deckHash(d) { var x = JSON.parse(JSON.stringify(d)); if (x.meta) delete x.meta.sharedFrom; return hash(JSON.stringify(x)); }
+  function ownerOf(url) { try { var h = new URL(url).hostname; return /\.github\.io$/i.test(h) ? h.split('.')[0] : h; } catch (e) { return ''; } }
+
+  /* ---------- shared decks: update checks (state kept in this browser only) ---------- */
+  var SHARED = 'launcher:shared:' + REPO;
+  function sharedState() { try { return JSON.parse(localStorage.getItem(SHARED)) || {}; } catch (e) { return {}; } }
+  function saveShared(s) { try { localStorage.setItem(SHARED, JSON.stringify(s)); } catch (e) {} }
+  function updateFor(info) { var s = info.sharedFrom && sharedState()[info.sharedFrom.url]; return !!(s && s.deckHash && info.sharedFrom.deckHash && s.deckHash !== info.sharedFrom.deckHash); }
+  function sourceGone(info) { var s = info.sharedFrom && sharedState()[info.sharedFrom.url]; return !!(s && s.missing); }
+  function checkUpdates(force) {
+    var c = load(); if (!c) return;
+    var urls = {};
+    c.files.forEach(function (f) { var i = (c.decks[f.name] || {}).info; if (i && i.sharedFrom) urls[i.sharedFrom.url] = 1; });
+    Object.keys(urls).forEach(function (u) {
+      var s = sharedState()[u] || {};
+      if (!force && s.checkedAt && Date.now() - s.checkedAt < 6 * 3600e3) return;   /* at most every 6 hours unless Refresh is tapped */
+      var done = function (patch) { var all = sharedState(); all[u] = Object.assign({}, all[u] || {}, patch, { checkedAt: Date.now() }); saveShared(all); render(load()); };
+      fetch(u, { method: 'HEAD', cache: 'no-store' }).then(function (r) {
+        if (!r.ok) { done({ missing: r.status === 404 }); return; }
+        var lm = r.headers.get('Last-Modified') || '';
+        if (lm && lm === s.lastModified && s.deckHash) { done({ missing: false }); return; }   /* unchanged since the last look */
+        return fetch(u, { cache: 'no-store' }).then(function (r2) { return r2.ok ? r2.text() : ''; }).then(function (t) {
+          var d = t && deckOf(t); if (d) done({ deckHash: deckHash(d), lastModified: lm, missing: false });
+        });
+      }).catch(function () {});
+    });
+  }
+
+  /* ---------- share ---------- */
+  function shareText(title) { return 'Here’s my UnChalked deck “' + title + '”. To add it: open your UnChalked launcher → Add a deck → From a link, and paste this link. New to UnChalked? It’s free: github.com/' + 'unchalked/unchalked'; }
+  function copy(text) {
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text).then(function () { return true; }, function () { return false; });
+    var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
+    var ok = false; try { ok = document.execCommand('copy'); } catch (e) {} ta.remove(); return Promise.resolve(ok);
+  }
+  function shareDeck(name, title) {
+    var url = new URL(encodeURI(name), location.href).href;
+    if (navigator.share) { navigator.share({ title: title, text: shareText(title), url: url }).catch(function () {}); return; }
+    copy(shareText(title) + '\n' + url).then(function (ok) { $('status').textContent = ok ? 'Link copied. Paste it to your friend.' : 'Copy this link: ' + url; });
+  }
+
+  /* ---------- deck list ---------- */
+  var pending = {};   /* file name -> hash of the text just published; the card says "Publishing…" until the site serves it */
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function render(c, msg) {
+    var list = $('list'); list.textContent = '';
+    if (msg != null) $('status').textContent = msg;
+    var rows = (c ? c.files : []).map(function (f) {
+      var info = (c.decks[f.name] || {}).info || { title: f.name, other: true };
+      return { f: f, info: info, p: info.id ? progressOf(info.id) : { answers: 0, last: 0, mastered: 0 } };
+    });
+    rows.sort(function (a, b) { return (b.p.last - a.p.last) || String(a.info.course || '').localeCompare(b.info.course || '') || String(a.info.title).localeCompare(b.info.title) || a.f.name.localeCompare(b.f.name); });
+    rows.forEach(function (r) {
+      var i = r.info, li = el('li', 'item'), a = el('a', 'card');
+      a.href = encodeURI(r.f.name);
+      if (i.course) a.appendChild(el('p', 'course', i.course));
+      a.appendChild(el('h2', '', i.title));
+      if (!i.other) {
+        var parts = [];
+        if (i.chapters) parts.push(plural(i.chapters, 'chapter'));
+        if (i.terms) parts.push(plural(i.terms, 'term'));
+        if (i.questions) parts.push(plural(i.questions, 'question'));
+        if (parts.length) a.appendChild(el('p', 'counts', parts.join(' · ')));
+      }
+      var row = el('div', 'row');
+      if (pending[r.f.name]) row.appendChild(el('span', 'pill new', 'Publishing… about a minute'));
+      if (i.version) row.appendChild(el('span', 'pill ver', 'App v' + i.version));
+      if (r.p.last) row.appendChild(el('span', 'pill done', 'Studied ' + ago(r.p.last) + ' · ' + plural(r.p.answers, 'answer')));
+      else if (!i.other) row.appendChild(el('span', 'pill new', 'Not studied in this browser'));
+      if (i.updated) row.appendChild(el('span', 'pill', 'Deck updated ' + i.updated));
+      if (i.sharedFrom) row.appendChild(el('span', 'pill shared', sourceGone(i) ? 'Shared deck · source removed' : 'Shared by ' + ownerOf(i.sharedFrom.url)));
+      if (row.childNodes.length) a.appendChild(row);
+      a.appendChild(el('p', 'file', r.f.name));
+      li.appendChild(a);
+      if (!i.other) {
+        var acts = el('div', 'acts');
+        if (i.sharedFrom && updateFor(i)) {
+          var up = el('button', 'btn sm upd', 'Update available'); up.type = 'button';
+          up.onclick = function () { openAdd({ link: i.sharedFrom.url, target: r.f.name }); };
+          acts.appendChild(up);
+        }
+        var sh = el('button', 'btn sm', 'Share with friends'); sh.type = 'button'; sh.setAttribute('aria-label', 'Share ' + i.title + ' with friends');
+        sh.onclick = function () { shareDeck(r.f.name, i.title); };
+        acts.appendChild(sh);
+        var more = el('button', 'btn sm icon', '⋯'); more.type = 'button'; more.setAttribute('aria-label', 'More for ' + i.title); more.setAttribute('aria-expanded', 'false');
+        var mrow = el('div', 'more-row'); mrow.hidden = true;
+        var rn = el('button', 'btn sm', 'Rename file'); rn.type = 'button'; rn.onclick = function () { renameDeck(r.f.name, i.title); };
+        var rm = el('button', 'btn sm danger', 'Remove from site'); rm.type = 'button'; rm.onclick = function () { removeDeck(r.f.name, i.title); };
+        mrow.appendChild(rn); mrow.appendChild(rm);
+        more.onclick = function () { mrow.hidden = !mrow.hidden; more.setAttribute('aria-expanded', String(!mrow.hidden)); };
+        if (IS_UPSTREAM) { li.appendChild(acts); } else { acts.appendChild(more); li.appendChild(acts); li.appendChild(mrow); }   /* the demo site: no rename/remove for visitors */
+      }
+      list.appendChild(li);
+    });
+    renderChecklist(); renderNewHere(); if (!updBusy) renderUpdate();
+    var empty = $('empty');
+    empty.hidden = rows.length > 0;
+    if (!rows.length) empty.textContent = c ? 'No study files in the repo yet. Tap Add a deck below.' : 'Couldn’t load the list yet. Check your connection and tap Refresh.';
+  }
+
+  var busy = false;
+  function listContents(useToken) {
+    var cfg = useToken ? syncCfg() : null, h = { Accept: 'application/vnd.github+json' };
+    if (cfg) h.Authorization = 'Bearer ' + cfg.token;
+    return fetch(GH + '/repos/' + REPO + '/contents/', { headers: h, cache: 'no-store' }).then(function (res) {
+      if (cfg && (res.status === 401 || res.status === 403 || res.status === 404)) return listContents(false);   /* a bad, expired or too-narrow token never blocks the list */
+      if (!res.ok) throw new Error(res.status === 403 || res.status === 429 ? 'busy' : 'http ' + res.status);
+      return res.json();
+    });
+  }
+  function refresh(force) {
+    if (busy) return Promise.resolve(); busy = true; $('refresh').disabled = true;
+    var c = load() || { files: [], decks: {}, at: 0 };
+    $('status').textContent = 'Checking for new files…';
+    return listContents(true)
+      .then(function (items) {
+        var seen = {}, files = (Array.isArray(items) ? items : []).filter(function (x) {
+          if (!x || seen[x.name]) return false; seen[x.name] = 1;
+          return x.type === 'file' && /\.html?$/i.test(x.name) && !/^(index|404)\.html?$/i.test(x.name) && x.name.charAt(0) !== '_';
+        }).map(function (x) { return { name: x.name, sha: x.sha }; });
+        return Promise.all(files.map(function (f) {
+          var old = c.decks[f.name];
+          if (!force && old && old.sha === f.sha) return old;
+          return fetch(encodeURI(f.name), { cache: 'no-cache' })
+            .then(function (r) { if (!r.ok) throw new Error('file'); return r.text(); })
+            .then(function (t) { return { sha: f.sha, info: parse(f.name, t) }; })
+            .catch(function () { return old || { sha: '', info: { title: f.name, other: true } }; });
+        })).then(function (decks) {
+          var next = { files: files, decks: {}, at: Date.now() };
+          files.forEach(function (f, k) { next.decks[f.name] = decks[k]; });
+          Object.keys(pending).forEach(function (n) {   /* just published, not in GitHub's listing yet: keep showing it */
+            if (!next.decks[n] && c.decks[n]) { next.files.push({ name: n, sha: c.decks[n].sha }); next.decks[n] = c.decks[n]; }
+          });
+          save(next);
+          render(next, plural(next.files.length, 'file') + ' · checked just now');
+        });
+      })
+      .catch(function (e) {
+        var when = c.at ? ' Showing the list from ' + ago(c.at) + '.' : '';
+        render(c.at ? c : null, (e && e.message === 'busy' ? 'GitHub is limiting requests right now.' : 'Couldn’t reach GitHub.') + when);
+      })
+      .then(function () { busy = false; $('refresh').disabled = false; });
+  }
+
+  /* ---------- GitHub calls with the token ---------- */
+  function gh(path, o) {
+    o = o || {};
+    var init = { method: o.method || 'GET', cache: 'no-store', headers: { Authorization: 'Bearer ' + o.token, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' } };
+    if (o.body) { init.body = JSON.stringify(o.body); init.headers['Content-Type'] = 'application/json'; }
+    return fetch(GH + path, init).then(function (r) {
+      return r.text().then(function (t) { var j = null; try { j = t ? JSON.parse(t) : null; } catch (e) {} return { status: r.status, json: j }; });
+    }, function () { return { status: 0, json: null }; });
+  }
+  function findGist(token) {
+    var hits = [];
+    function page(n) {
+      return gh('/gists?per_page=100&page=' + n, { token: token }).then(function (r) {
+        if (r.status !== 200) return r.status;
+        var list = Array.isArray(r.json) ? r.json : [];
+        list.forEach(function (g) { if (g && g.id && (g.description === GIST_DESC || (g.files && Object.prototype.hasOwnProperty.call(g.files, GIST_META)))) hits.push(g); });
+        if (list.length >= 100 && n < 3) return page(n + 1);
+        return 200;
+      });
+    }
+    return page(1).then(function (st) {
+      hits.sort(function (a, b) { return String(a.created_at || '').localeCompare(String(b.created_at || '')) || String(a.id).localeCompare(String(b.id)); });
+      return { status: st, id: hits[0] ? hits[0].id : '' };
+    });
+  }
+
+  /* ---------- sync bar + token dialog ---------- */
+  function renderSync() {
+    var c = syncCfg(), bar = $('syncbar'), last = 0;
+    if (c && c.lastSyncAt) Object.keys(c.lastSyncAt).forEach(function (k) { var t = +c.lastSyncAt[k]; if (t > last) last = t; });
+    bar.className = 'syncbar' + (c ? (c.lastError ? ' err' : ' on') : '');
+    $('sync-txt').innerHTML = c ? '<b>Sync on</b>' + (c.login ? ' as ' + esc(c.login) : '') + ' · ' + (c.lastError ? 'needs attention: open a deck’s Settings' : last ? 'last synced ' + esc(ago(last)) : 'syncs when you open a deck')
+      : '<b>Sync off</b> · progress stays in this browser';
+    $('sync-btn').textContent = c ? 'Token' : 'Set up';
+  }
+  function tokenLink() {
+    var owner = REPO.split('/')[0];
+    return 'https://github.com/settings/personal-access-tokens/new?name=UnChalked&description=' + encodeURIComponent('UnChalked: progress sync and adding decks') +
+      '&target_name=' + encodeURIComponent(owner) + '&expires_in=365&gists=write&contents=write';
+  }
+  function openToken(replacing) {
+    var c = syncCfg(), body = $('tok-body'), foot = $('tok-foot');
+    if (c && !replacing) {
+      body.innerHTML = '<p>Connected as <b>' + esc(c.login || 'your GitHub account') + '</b> in this browser.</p>' +
+        '<p class="small muted">This one token syncs progress for every deck on this site and lets you add decks here. It stays in this browser and is only sent to GitHub.</p>' +
+        '<p class="small muted">To use it on another device or in the home-screen app, paste the same token there once.</p><div id="tok-msg"></div>';
+      foot.innerHTML = '<button type="button" class="btn danger" id="tok-remove">Remove from this browser</button><button type="button" class="btn" id="tok-replace">Use a different token</button><button type="button" class="btn primary" data-close>Done</button>';
+      $('tok-replace').onclick = function () { openToken(true); };
+      $('tok-remove').onclick = function () {
+        if (!confirm('Remove the token from this browser? Sync stops here. Your Gist and all your progress stay.')) return;
+        try { localStorage.removeItem(SYNC); } catch (e) {}
+        renderSync(); openToken(false);
+      };
+    } else {
+      body.innerHTML = '<p>One GitHub token turns on <b>sync across devices</b> and <b>adding decks from here</b>.</p>' +
+        '<ol class="small"><li><a href="' + esc(tokenLink()) + '" target="_blank" rel="noopener noreferrer">Open GitHub’s token form</a> (name, a 1-year expiration and both permissions are filled in).</li>' +
+        '<li>Under <b>Repository access</b>, choose <b>Only select repositories</b> and pick <b>' + esc(REPO.split('/')[1]) + '</b>.</li>' +
+        '<li>Check the permissions: <b>Contents: Read and write</b> and <b>Gists: Read and write</b>.</li>' +
+        '<li><b>Generate token</b>, copy it, and paste it below.</li></ol>' +
+        '<label class="f" for="tok-in">Token</label><input type="password" id="tok-in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_…">' +
+        '<p class="tiny muted">Treat it like a password. It is saved only in this browser and sent only to api.github.com.</p><div id="tok-msg"></div>';
+      foot.innerHTML = (c ? '<button type="button" class="btn" id="tok-back">Back</button>' : '') + '<button type="button" class="btn primary" id="tok-go">Connect</button>';
+      if (c) $('tok-back').onclick = function () { openToken(false); };
+      $('tok-go').onclick = connect;
+      $('tok-in').onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); connect(); } };
+    }
+    var d = $('dlg-token'); if (!d.open) d.showModal();
+    var f = $('tok-in'); if (f) f.focus();
+  }
+  function msg(id, kind, html) { var m = $(id); if (m) m.innerHTML = html ? '<div class="msg ' + kind + '">' + html + '</div>' : ''; }
+  function connect() {
+    var tok = ($('tok-in').value || '').trim(), go = $('tok-go');
+    if (tok.length < 20 || /\s/.test(tok)) { msg('tok-msg', 'bad', 'That doesn’t look like a whole GitHub token. Copy it again and paste it here.'); return; }
+    go.disabled = true; msg('tok-msg', 'warn', 'Checking the token…');
+    var login = '';
+    gh('/user', { token: tok }).then(function (r) {
+      if (r.status === 401) throw new Error('GitHub rejected this token. Check that you copied all of it, or make a new one.');
+      if (r.status !== 200 || !r.json || !r.json.login) throw new Error(r.status ? 'GitHub answered with an error (' + r.status + '). Try again in a minute.' : 'Couldn’t reach GitHub. Check your connection.');
+      login = r.json.login;
+      return findGist(tok);
+    }).then(function (g) {
+      if (g.status === 403 || g.status === 404) throw new Error('This token can’t use Gists. On GitHub, edit the token and add <b>Gists: Read and write</b> under Account permissions.');
+      if (g.status !== 200) throw new Error('Couldn’t check your Gists (' + (g.status || 'offline') + '). Try again.');
+      var prev = syncCfg();
+      var cfg = { token: tok, gistId: g.id, login: login, lastSyncAt: prev && prev.login === login && prev.lastSyncAt ? prev.lastSyncAt : {}, lastError: '' };
+      try { localStorage.setItem(SYNC, JSON.stringify(cfg)); } catch (e) { throw new Error('This browser wouldn’t save the token (private browsing?).'); }
+      renderSync(); refreshBranch();
+      openToken(false);
+      msg('tok-msg', 'ok', 'Connected as <b>' + esc(login) + '</b>. ' + (g.id ? 'Found your sync Gist; ' : 'Your first deck you open will create the sync Gist; ') + 'every deck on this site will sync in this browser.');
+    }).catch(function (e) { msg('tok-msg', 'bad', e.message); }).then(function () { if ($('tok-go')) $('tok-go').disabled = false; });
+  }
+  function refreshBranch() {
+    var c = syncCfg(); if (!c) return;
+    gh('/repos/' + REPO, { token: c.token }).then(function (r) { if (r.status === 200 && r.json && r.json.default_branch) BRANCH = r.json.default_branch; });
+  }
+
+  /* ---------- add a deck ---------- */
+  var A = null;   /* the add dialog's state */
+  function looseJson(text) {
+    var s = String(text || ''), a = s.indexOf('{'), b = s.lastIndexOf('}');
+    if (a < 0 || b <= a) throw new Error('No deck JSON found. Paste the whole code block the AI gave you.');
+    try { return JSON.parse(s.slice(a, b + 1)); } catch (e) { throw new Error('The JSON has a syntax error (' + e.message + '). Ask the AI to resend the deck as one valid JSON block.'); }
+  }
+  function checkDeck(d) {
+    var E = [], ids = {};
+    if (!d || typeof d !== 'object' || Array.isArray(d)) return ['Not a deck: expected a JSON object.'];
+    if (d.schema !== 1) E.push('“schema” must be 1.');
+    var m = d.meta || {};
+    if (typeof m.id !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(m.id)) E.push('meta.id must be a short ID such as fin331-fall2026.');
+    if (!m.title) E.push('meta.title is missing.');
+    ['chapters', 'objectives', 'terms', 'questions'].forEach(function (k) { if (d[k] !== undefined && !Array.isArray(d[k])) E.push('“' + k + '” must be a list.'); });
+    var L = function (k) { return Array.isArray(d[k]) ? d[k] : []; }, ch = {}, lo = {};
+    L('chapters').forEach(function (c) { if (c && c.id) ch[c.id] = 1; });
+    L('objectives').forEach(function (o) { if (o && o.id) lo[o.id] = 1; });
+    ['chapters', 'objectives', 'terms', 'questions'].forEach(function (k) {
+      L(k).forEach(function (x, i) {
+        if (!x || x.id == null || x.id === '') { E.push(k + ' #' + (i + 1) + ' has no id.'); return; }
+        if (ids[x.id]) E.push('Duplicate id “' + x.id + '”.'); ids[x.id] = 1;
+      });
+    });
+    L('objectives').concat(L('terms'), L('questions')).forEach(function (x) { if (x && x.chapter && !ch[x.chapter] && L('chapters').length) E.push('“' + x.id + '” points to a missing chapter “' + x.chapter + '”.'); });
+    L('terms').concat(L('questions')).forEach(function (x) { if (x && x.objective && !lo[x.objective] && L('objectives').length) E.push('“' + x.id + '” points to a missing objective “' + x.objective + '”.'); });
+    L('terms').forEach(function (t) { if (t && (!t.term || !t.definition)) E.push('Term “' + t.id + '” needs a term and a definition.'); });
+    L('questions').forEach(function (q) {
+      if (!q) return;
+      var opts = Array.isArray(q.options) ? q.options : [], n = opts.filter(function (o) { return o && o.correct === true; }).length;
+      if (!q.stem) E.push('Question “' + q.id + '” has no stem.');
+      if (opts.length < 2) E.push('Question “' + q.id + '” needs at least 2 options.');
+      else if (q.type === 'multi' ? n < 1 : n !== 1) E.push('Question “' + q.id + '” needs ' + (q.type === 'multi' ? 'at least one' : 'exactly one') + ' correct option.');
+    });
+    return E.slice(0, 12).concat(E.length > 12 ? ['…and ' + (E.length - 12) + ' more.'] : []);
+  }
+  function mergeDecks(base, add) {
+    var out = JSON.parse(JSON.stringify(base)), n = { added: 0, updated: 0 };
+    out.meta = Object.assign({}, base.meta, add.meta || {}, { id: base.meta.id });
+    ['chapters', 'objectives', 'terms', 'questions'].forEach(function (k) {
+      var list = Array.isArray(out[k]) ? out[k] : (out[k] = []), at = {};
+      list.forEach(function (x, i) { if (x && x.id != null) at[x.id] = i; });
+      (Array.isArray(add[k]) ? add[k] : []).forEach(function (x) {
+        if (!x || x.id == null) return;
+        if (Object.prototype.hasOwnProperty.call(at, x.id)) { list[at[x.id]] = x; n.updated++; } else { at[x.id] = list.length; list.push(x); n.added++; }
+      });
+    });
+    return { deck: out, n: n };
+  }
+  function buildHtml(tpl, deck) {
+    var m = DECK_RE.exec(tpl); if (!m) throw new Error('The app file used as a template has no deck block.');
+    var json = '\n' + JSON.stringify(deck, null, 2).replace(/<\//g, '<\\/').replace(new RegExp('<' + '!--', 'g'), '\\u003c!--') + '\n';
+    var head = tpl.slice(0, m.index).replace(/<title>[^<]*<\/title>/, '<title>' + esc(plain(deck.meta.title || 'UnChalked')) + '</title>');
+    return head + m[1] + json + m[3] + tpl.slice(m.index + m[0].length);
+  }
+  function b64(str) { return b64bytes(new TextEncoder().encode(str)); }
+  function b64bytes(bytes) {
+    var bin = '', CH = 0x8000;
+    for (var i = 0; i < bytes.length; i += CH) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
+    return btoa(bin);
+  }
+  function siteDecks() { var c = load() || { files: [], decks: {} }; return c.files.map(function (f) { return { name: f.name, info: (c.decks[f.name] || {}).info || {} }; }).filter(function (x) { return x.info && !x.info.other && x.info.id; }); }
+  function newestApp() { var best = null; siteDecks().forEach(function (x) { if (x.info.version && (!best || vnum(x.info.version) > vnum(best.info.version))) best = x; }); return best; }
+  function slugName(s) { return String(s || 'deck').toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'deck'; }
+  function cleanName(s) {
+    s = String(s || '').trim().replace(/\s+/g, '-').replace(/[^A-Za-z0-9._-]/g, '');
+    if (!/\.html?$/i.test(s)) s += '.html';
+    return s;
+  }
+
+  function openAdd(pre) {
+    pre = pre && pre.link ? pre : null;
+    var body = $('add-body'), foot = $('add-foot'), d = $('dlg-add');
+    if (!syncCfg()) {
+      body.innerHTML = '<p>To add decks from here, connect your GitHub token first (the same one that turns on sync).</p>' +
+        '<p class="small muted">Or upload the .html file on GitHub’s own page: <a href="https://github.com/' + esc(REPO) + '/upload/' + esc(BRANCH) + '" target="_blank" rel="noopener">open the upload page</a>, drop in the file, then tap Commit changes.</p>';
+      foot.innerHTML = '<button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn primary" id="add-tok">Set up token</button>';
+      $('add-tok').onclick = function () { d.close(); openToken(false); };
+      if (!d.open) d.showModal(); return;
+    }
+    A = { src: pre ? 'link' : 'json', text: '', fileText: '', fileName: '', link: pre ? pre.link : '', updTarget: pre ? pre.target : '' };
+    $('add-h').textContent = pre ? 'Update shared deck' : 'Add a deck';
+    renderAdd(); if (!d.open) d.showModal();
+    if (pre) check();
+  }
+  function renderAdd() {
+    var body = $('add-body'), foot = $('add-foot');
+    var seg = function (v, label) { return '<button type="button" class="btn sm" id="src-' + v + '" aria-pressed="' + (A.src === v) + '">' + label + '</button>'; };
+    var h = '<div class="seg" role="group" aria-label="Source">' + seg('json', 'Paste JSON') + seg('link', 'From a link') + seg('file', '.html file') + '</div>';
+    if (A.src === 'json') h += '<label class="f" for="add-json">Deck JSON from the AI</label><textarea id="add-json" spellcheck="false" placeholder="Paste the whole ```json block here">' + esc(A.text) + '</textarea><p class="tiny muted">No JSON yet? <button type="button" class="linkbtn" id="add-prompt">Copy the AI deck prompt</button>, paste it into any AI chat with your class materials, and paste its answer here. For the prompt’s add or upgrade jobs (only new items), you can merge them into the existing deck in the next step.</p>';
+    else if (A.src === 'link') h += '<label class="f" for="add-link">Link to a friend’s deck</label><input type="text" id="add-link" inputmode="url" autocapitalize="off" spellcheck="false" placeholder="https://name.github.io/…/deck.html" value="' + esc(A.link) + '"><p class="tiny muted">Paste the link (or the whole message) a friend shared. You get your own copy with your own progress, and an <b>Update available</b> button when they change it.</p>';
+    else h += '<label class="f" for="add-file">An UnChalked .html file (from Save as HTML)</label><input type="file" id="add-file" accept=".html,.htm,text/html">' + (A.fileName ? '<p class="small">Chosen: <b>' + esc(A.fileName) + '</b></p>' : '');
+    h += '<div id="add-plan"></div><div id="add-msg"></div>';
+    body.innerHTML = h;
+    foot.innerHTML = '<button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn primary" id="add-check">Check</button>';
+    ['json', 'link', 'file'].forEach(function (v) { $('src-' + v).onclick = function () { keepText(); A.src = v; A.plan = null; renderAdd(); }; });
+    if (A.src === 'json') {
+      $('add-json').oninput = function () { if (A.plan) { A.plan = null; showPlanButton(false, true); } };
+      $('add-prompt').onclick = function () {
+        if (!PROMPT) { loadPrompt().then(function (t) { msg('add-msg', t ? 'warn' : 'bad', t ? 'Prompt loaded. Tap Copy the AI deck prompt again.' : 'Couldn’t load the deck prompt. Check your connection.'); }); return; }
+        copy(PROMPT).then(function (ok) { msg('add-msg', ok ? 'ok' : 'bad', ok ? 'Deck prompt copied. Paste it into any AI chat with your class materials.' : 'Your browser blocked copying.'); });
+      };
+      loadPrompt();   /* ready before the tap: iPhones only allow copying inside the tap itself */
+    }
+    else if (A.src === 'link') { $('add-link').oninput = function () { if (A.plan) { A.plan = null; showPlanButton(false, true); } }; $('add-link').onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); check(); } }; }
+    else $('add-file').onchange = function (e) {
+      var f = e.target.files && e.target.files[0]; if (!f) return;
+      var r = new FileReader();
+      r.onload = function () { A.fileText = String(r.result || ''); A.fileName = f.name; A.plan = null; renderAdd(); };
+      r.onerror = function () { msg('add-msg', 'bad', 'Couldn’t read that file.'); };
+      r.readAsText(f);
+    };
+    $('add-check').onclick = check;
+  }
+  function keepText() { var t = $('add-json'); if (t) A.text = t.value; var l = $('add-link'); if (l) A.link = l.value; }
+  function showPlanButton(ready, clear) {
+    $('add-foot').innerHTML = '<button type="button" class="btn" data-close>Cancel</button>' + (ready ? '<button type="button" class="btn" id="add-check">Check again</button><button type="button" class="btn primary" id="add-go">' + (A.plan && A.plan.isUpdate ? 'Update' : 'Publish') + '</button>' : '<button type="button" class="btn primary" id="add-check">Check</button>');
+    $('add-check').onclick = check; if (ready) $('add-go').onclick = publish;
+    if (clear) { $('add-plan').innerHTML = ''; msg('add-msg'); }   /* only when the pasted text changes; error messages stay put */
+  }
+  function linkFrom(text) {
+    var s = String(text || '').trim(), m = s.match(/https?:\/\/[^\s"'<>]+/i);
+    if (m) s = m[0]; else if (/^[\w.-]+\.github\.io\//i.test(s)) s = 'https://' + s.split(/\s/)[0]; else return '';
+    s = s.replace(/[).,;]+$/, '');
+    if (!LOCAL_OK.test(s)) s = s.replace(/^http:\/\//i, 'https://');   /* GitHub Pages is https; plain http only for local testing */
+    try { var u = new URL(s); u.hash = ''; u.search = ''; return u.href; } catch (e) { return ''; }
+  }
+  function check() {
+    keepText(); msg('add-msg'); $('add-plan').innerHTML = '';
+    if (A.src === 'link') {
+      var url = linkFrom(A.link);
+      if (!url) { msg('add-msg', 'bad', 'Paste the full link your friend sent (it starts with https:// and ends in .html).'); showPlanButton(false); return; }
+      if (new URL(url).origin === location.origin) { msg('add-msg', 'bad', 'That deck is already on your own site.'); showPlanButton(false); return; }
+      msg('add-msg', 'warn', 'Loading the shared deck…');
+      fetch(url, { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status === 404 ? 'That link doesn’t exist anymore (404). Ask your friend for a fresh link.' : 'Couldn’t load that link (' + r.status + ').'); return r.text(); })
+        .then(function (t) {
+          var deck = deckOf(t);
+          if (!deck) throw new Error('That link isn’t an UnChalked deck. Ask your friend to use Share with friends on the deck.');
+          var v = t.match(/var VERSION = '([^']+)'/);
+          A.fileText = t; A.linkUrl = url; msg('add-msg');
+          analyze(deck, v ? v[1] : '');
+        }).catch(function (e) { msg('add-msg', 'bad', esc(e && e.message && !/fetch/i.test(e.message) ? e.message : 'Couldn’t reach that link. Check your connection and the link.')); showPlanButton(false); });
+      return;
+    }
+    var deck, fileVer = '';
+    try {
+      if (A.src === 'json') deck = looseJson(A.text);
+      else {
+        if (!A.fileText) throw new Error('Choose a file first.');
+        deck = deckOf(A.fileText);
+        if (!deck) throw new Error('That file isn’t an UnChalked deck (no deck data inside). Use the file from Save as HTML.');
+        var v = A.fileText.match(/var VERSION = '([^']+)'/); fileVer = v ? v[1] : '';
+      }
+    } catch (e) { msg('add-msg', 'bad', esc(e.message)); showPlanButton(false); return; }
+    analyze(deck, fileVer);
+  }
+  function analyze(deck, fileVer) {
+    var errs = checkDeck(deck);
+    if (errs.length) { msg('add-msg', 'bad', 'This deck has problems to fix first' + (A.src === 'link' ? ' (tell your friend)' : ' (ask the AI to correct them)') + ':<ul>' + errs.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>'); showPlanButton(false); return; }
+    var app = newestApp();
+    if (A.src !== 'file' && !app) { msg('add-msg', 'bad', 'There is no UnChalked deck on your site yet to take the app from. Add one .html file first (.html file), then ' + (A.src === 'link' ? 'shared links' : 'JSON') + ' work.'); showPlanButton(false); return; }
+    var same = siteDecks().filter(function (x) { return x.info.id === deck.meta.id; });
+    same.sort(function (a, b) { return vnum(b.info.version) - vnum(a.info.version); });
+    var linked = A.src === 'link' ? same.filter(function (x) { return x.info.sharedFrom && x.info.sharedFrom.url === A.linkUrl; }) : [];
+    if (A.updTarget) linked = same.filter(function (x) { return x.name === A.updTarget; }).concat(linked);
+    var nNew = (deck.terms || []).length + (deck.questions || []).length;
+    var partial = same.length && nNew < ((same[0].info.terms || 0) + (same[0].info.questions || 0));
+    var target = linked.length ? linked[0].name : same.length ? same[0].name : '';
+    var mode = !same.length ? 'new' : linked.length ? 'replace' : A.src === 'json' && partial ? 'merge' : A.src === 'link' ? 'new' : 'replace';
+    A.plan = { deck: deck, fileVer: fileVer, app: app, same: same, mode: mode, target: target, isUpdate: !!linked.length,
+               srcHash: A.src === 'link' ? deckHash(deck) : '', name: cleanName(A.src === 'link' ? decodeURIComponent(A.linkUrl.split('/').pop() || '') || slugName(deck.meta.id) : slugName(deck.meta.id)) };
+    if (A.src === 'file' && !same.length) A.plan.name = cleanName(A.fileName || A.plan.name);
+    var taken = {}; (load() || { files: [] }).files.forEach(function (f) { taken[f.name.toLowerCase()] = 1; });
+    for (var k = 2, base = A.plan.name.replace(/\.html?$/i, ''); taken[A.plan.name.toLowerCase()] && k < 50; k++) A.plan.name = base + '-' + k + '.html';   /* "separate file" never collides by default */
+    if (A.plan.isUpdate && A.plan.srcHash && linked[0].info.sharedFrom && linked[0].info.sharedFrom.deckHash === A.plan.srcHash) {
+      msg('add-msg', 'ok', 'Your copy (' + esc(target) + ') already matches the shared deck. Nothing to update.');
+      var all = sharedState(); all[A.linkUrl] = Object.assign({}, all[A.linkUrl] || {}, { deckHash: A.plan.srcHash, checkedAt: Date.now() }); saveShared(all); render(load());
+      showPlanButton(false); return;
+    }
+    renderPlan(); showPlanButton(true);
+  }
+  function renderPlan() {
+    var P = A.plan, d = P.deck, h = '<div class="summary"><b>' + esc(plain(d.meta.title)) + '</b>' + esc(plain(d.meta.course || '')) +
+      '<br>' + esc([plural((d.chapters || []).length, 'chapter'), plural((d.terms || []).length, 'term'), plural((d.questions || []).length, 'question')].join(' · ')) + ' · deck ID <code>' + esc(d.meta.id) + '</code>' +
+      (A.src === 'link' ? '<br>Shared by <b>' + esc(ownerOf(A.linkUrl)) + '</b>' : '') + '</div>';
+    if (P.isUpdate) {
+      h += '<p class="small" style="margin-top:12px">Updates your copy, <b>' + esc(P.target) + '</b>, to your friend’s latest version. Your progress stays (it is saved by deck ID). Any edits you made to your copy are replaced.</p>';
+    } else if (P.same.length) {
+      h += '<p class="small" style="margin-top:12px">A deck with this ID is already on your site: <b>' + esc(P.same.map(function (x) { return x.name; }).join(', ')) + '</b>. Progress is saved by deck ID, so it is shared between them.</p>';
+      if (A.src !== 'file') h += choice('merge', 'Merge into ' + P.target, 'Adds new items and updates items with the same ID; keeps everything else.' + (A.src === 'json' ? ' Use this for the deck prompt’s add and upgrade jobs.' : ''));
+      h += choice('replace', 'Replace ' + P.target, 'The site’s copy becomes exactly this deck.') + choice('new', 'Publish as a separate file', 'Both files stay; they share progress because the ID is the same.');
+    }
+    if (P.mode === 'new') h += '<label class="f" for="add-name">File name</label><input type="text" id="add-name" value="' + esc(P.name) + '" autocapitalize="off" spellcheck="false">';
+    var appNote = A.src === 'json' ? 'Built with UnChalked v' + esc(P.app.info.version) + ' (taken from ' + esc(P.app.name) + ').'
+      : A.src === 'link' ? 'Only the deck is copied; it runs in your own app (UnChalked v' + esc(P.app.info.version) + ').'
+      : P.app ? 'Only the deck is taken from the file; it runs in your own app (UnChalked v' + esc(P.app.info.version) + ').' : 'Your site has no deck yet, so this first one keeps the app inside the file (v' + esc(P.fileVer || '?') + ').';
+    h += '<p class="tiny muted" style="margin-top:10px">' + appNote + ' It goes live about a minute after publishing.</p>';
+    $('add-plan').innerHTML = h;
+    Array.prototype.forEach.call(document.querySelectorAll('input[name=add-mode]'), function (r) { r.onchange = function () { P.mode = r.value; renderPlan(); }; });
+    var nm = $('add-name'); if (nm) nm.oninput = function () { P.name = nm.value; };
+  }
+  function choice(v, title, sub) { return '<label class="choice"><input type="radio" name="add-mode" value="' + v + '"' + (A.plan.mode === v ? ' checked' : '') + '><span><b>' + esc(title) + '</b><small>' + esc(sub) + '</small></span></label>'; }
+
+  function publish() {
+    var P = A.plan, cfg = syncCfg(); if (!P || !cfg) return;
+    var name = P.mode === 'new' ? cleanName(P.name) : P.target;
+    if (P.mode === 'new' && (/^(index|404)\.html?$/i.test(name) || !/^[A-Za-z0-9][A-Za-z0-9._-]*\.html?$/.test(name))) { msg('add-msg', 'bad', 'Pick a file name like <code>fin331-exam2.html</code> (letters, numbers, dashes; not index.html).'); return; }
+    var go = $('add-go'); go.disabled = true; $('add-check').disabled = true;
+    msg('add-msg', 'warn', P.isUpdate ? 'Updating…' : 'Publishing…');
+    var deck = JSON.parse(JSON.stringify(P.deck)), counts = null;
+    /* A shared link only ever contributes deck DATA: it is wrapped in this site's own app, never the other site's code (which would run
+       here, next to this site's token). Only your own .html file may bring a newer app, and only when the site has no newer one. */
+    var useOwn = A.src === 'file' && !P.app;   /* a file's own code is used only for a site's very first deck; new app versions arrive through template updates */
+    var tplP = useOwn ? Promise.resolve(A.fileText)
+      : fetch(encodeURI(P.app.name), { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('Couldn’t load ' + esc(P.app.name) + ' to take the app from.'); return r.text(); });
+    var baseP = P.mode === 'merge' ? fetch(encodeURI(P.target), { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('Couldn’t load ' + esc(P.target) + ' to merge into.'); return r.text(); }) : Promise.resolve('');
+    var html = '';
+    Promise.all([tplP, baseP]).then(function (got) {
+      if (P.mode === 'merge') {
+        var base = deckOf(got[1]); if (!base) throw new Error(esc(P.target) + ' has no readable deck to merge into.');
+        var m = mergeDecks(base, deck); deck = m.deck; counts = m.n;
+      }
+      if (A.src === 'link') { deck.meta = deck.meta || {}; deck.meta.sharedFrom = { url: A.linkUrl, deckHash: P.srcHash }; }   /* lets this copy notice when the friend updates theirs */
+      html = buildHtml(got[0], deck);
+      return gh('/repos/' + REPO + '/contents/' + encodeURIComponent(name) + '?ref=' + encodeURIComponent(BRANCH), { token: cfg.token });
+    }).then(function (r) {
+      if (r.status === 401) throw new Error('GitHub rejected the token (expired?). Tap Token at the top and connect a new one.');
+      var sha = r.status === 200 && r.json && r.json.sha ? r.json.sha : null;
+      if (P.mode === 'new' && sha) throw new Error('A file named ' + esc(name) + ' already exists. Choose another name, or Replace.');
+      var verb = sha ? 'Update ' : 'Add ';
+      var body = { message: verb + name + (A.src === 'link' ? ' (shared by ' + ownerOf(A.linkUrl) + ')' : '') + ' from the UnChalked launcher', content: b64(html), branch: BRANCH };
+      if (sha) body.sha = sha;
+      return gh('/repos/' + REPO + '/contents/' + encodeURIComponent(name), { method: 'PUT', token: cfg.token, body: body });
+    }).then(function (r) {
+      if (r.status === 401) throw new Error('GitHub rejected the token (expired?). Tap Token at the top and connect a new one.');
+      if (r.status === 403 || r.status === 404) throw new Error('This token can’t write to <b>' + esc(REPO) + '</b>. On GitHub, edit the token: Repository access → Only select repositories → <b>' + esc(REPO.split('/')[1]) + '</b>, and Repository permissions → <b>Contents: Read and write</b>.');
+      if (r.status === 409) throw new Error('The file changed on GitHub at the same moment. Tap Check again, then Publish.');
+      if (r.status !== 200 && r.status !== 201) throw new Error(r.status ? 'GitHub answered with an error (' + r.status + ').' : 'Couldn’t reach GitHub. Check your connection.');
+      var c = load() || { files: [], decks: {}, at: Date.now() }, sha = r.json && r.json.content ? r.json.content.sha : '';
+      if (!c.files.some(function (f) { return f.name === name; })) c.files.push({ name: name, sha: sha });
+      c.files.forEach(function (f) { if (f.name === name) f.sha = sha; });
+      c.decks[name] = { sha: sha, info: parse(name, html) };
+      if (A.src === 'link') { var all = sharedState(); all[A.linkUrl] = Object.assign({}, all[A.linkUrl] || {}, { deckHash: P.srcHash, checkedAt: Date.now(), missing: false }); saveShared(all); }
+      save(c); pending[name] = hash(html); render(c, (P.isUpdate ? 'Updated ' : 'Published ') + name);
+      watch(name, 0);
+      msg('add-msg', 'ok', (counts ? 'Merged: ' + plural(counts.added, 'new item') + ', ' + plural(counts.updated, 'updated item') + '. ' : '') + (P.isUpdate ? 'Updated ' : 'Published ') + '<b>' + esc(name) + '</b>. It goes live in about a minute; the card says “Publishing…” until then.');
+      $('add-foot').innerHTML = '<button type="button" class="btn primary" data-close>Done</button>';
+    }).catch(function (e) {
+      msg('add-msg', 'bad', e.message || 'Something went wrong.');
+      if ($('add-go')) $('add-go').disabled = false; if ($('add-check')) $('add-check').disabled = false;
+    });
+  }
+  function watch(name, n) {   /* poll the site until it serves exactly what was published (GitHub Pages takes ~1 min) */
+    if (!pending[name]) return;
+    if (n > 24) { delete pending[name]; render(load()); return; }
+    setTimeout(function () {
+      fetch(encodeURI(name) + '?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : ''; }, function () { return ''; }).then(function (t) {
+        if (t && hash(t) === pending[name]) { delete pending[name]; render(load(), name + ' is live'); }
+        else watch(name, n + 1);
+      });
+    }, n ? 10000 : 20000);
+  }
+
+  /* ---------- rename / remove a deck (GitHub API; progress is kept by deck ID either way) ---------- */
+  function needToken() { if (syncCfg()) return false; openToken(false); return true; }
+  function shaOf(name, token) {
+    return gh('/repos/' + REPO + '/contents/' + encodeURIComponent(name) + '?ref=' + encodeURIComponent(BRANCH), { token: token }).then(function (r) {
+      if (r.status === 401) throw new Error('GitHub rejected the token (expired?). Tap Token at the top and connect a new one.');
+      return r.status === 200 && r.json && r.json.sha ? r.json.sha : null;
+    });
+  }
+  function writeErr(r) {
+    if (r.status === 401) return 'GitHub rejected the token (expired?). Tap Token at the top and connect a new one.';
+    if (r.status === 403 || r.status === 404) return 'This token can’t change files in ' + REPO + '. Edit the token on GitHub: Only select repositories → ' + REPO.split('/')[1] + ', Contents: Read and write.';
+    return r.status ? 'GitHub answered with an error (' + r.status + ').' : 'Couldn’t reach GitHub. Check your connection.';
+  }
+  function removeDeck(name, title) {
+    if (needToken()) return;
+    if (!confirm('Remove “' + title + '” (' + name + ') from your site?\n\nYour progress stays saved and comes back if you add this deck again. Friends who copied it keep their copy but stop getting updates.')) return;
+    var cfg = syncCfg(); $('status').textContent = 'Removing ' + name + '…';
+    shaOf(name, cfg.token).then(function (sha) {
+      if (!sha) throw new Error(name + ' is already gone from GitHub.');
+      return gh('/repos/' + REPO + '/contents/' + encodeURIComponent(name), { method: 'DELETE', token: cfg.token, body: { message: 'Remove ' + name + ' from the UnChalked launcher', sha: sha, branch: BRANCH } });
+    }).then(function (r) {
+      if (r.status !== 200) throw new Error(writeErr(r));
+      var c = load() || { files: [], decks: {} };
+      c.files = c.files.filter(function (f) { return f.name !== name; }); delete c.decks[name]; delete pending[name];
+      save(c); render(c, 'Removed ' + name + '.');
+    }).catch(function (e) { $('status').textContent = e.message; });
+  }
+  function renameDeck(name, title) {
+    if (needToken()) return;
+    var to = prompt('New file name for “' + title + '”.\n\nYour progress stays. Links you already shared to ' + name + ' will stop working.', name);
+    if (to == null) return;
+    to = cleanName(to);
+    if (to.toLowerCase() === name.toLowerCase()) return;
+    if (/^(index|404)\.html?$/i.test(to) || !/^[A-Za-z0-9][A-Za-z0-9._-]*\.html?$/.test(to)) { $('status').textContent = 'Use letters, numbers and dashes, like fin331-exam2.html (not index.html).'; return; }
+    if ((load() || { files: [] }).files.some(function (f) { return f.name.toLowerCase() === to.toLowerCase(); })) { $('status').textContent = 'A file named ' + to + ' already exists.'; return; }
+    var cfg = syncCfg(), text = ''; $('status').textContent = 'Renaming ' + name + ' to ' + to + '…';
+    fetch(encodeURI(name), { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('Couldn’t load ' + name + '.'); return r.text(); }).then(function (t) {
+      text = t;
+      return gh('/repos/' + REPO + '/contents/' + encodeURIComponent(to), { method: 'PUT', token: cfg.token, body: { message: 'Rename ' + name + ' to ' + to + ' from the UnChalked launcher', content: b64(text), branch: BRANCH } });
+    }).then(function (r) {
+      if (r.status !== 201 && r.status !== 200) throw new Error(writeErr(r));
+      var newSha = r.json && r.json.content ? r.json.content.sha : '';
+      return shaOf(name, cfg.token).then(function (sha) {
+        return sha ? gh('/repos/' + REPO + '/contents/' + encodeURIComponent(name), { method: 'DELETE', token: cfg.token, body: { message: 'Rename ' + name + ' to ' + to + ' (remove old name)', sha: sha, branch: BRANCH } }) : { status: 200 };
+      }).then(function (d) {
+        var c = load() || { files: [], decks: {} };
+        var old = c.decks[name]; c.files = c.files.filter(function (f) { return f.name !== name; }); delete c.decks[name];
+        c.files.push({ name: to, sha: newSha }); c.decks[to] = { sha: newSha, info: old ? old.info : parse(to, text) };
+        pending[to] = hash(text); save(c); render(c, d.status === 200 ? 'Renamed to ' + to + '.' : 'Copied to ' + to + ', but the old file could not be removed: ' + writeErr(d)); watch(to, 0);
+      });
+    }).catch(function (e) { $('status').textContent = e.message; });
+  }
+
+  /* ---------- "New here? Get your own UnChalked" ---------- */
+  var TEMPLATE_REPO = 'unchalked/unchalked', TEMPLATE_URL = 'https://github.com/' + TEMPLATE_REPO;
+  var AI_LINE = 'Set me up with UnChalked: ' + TEMPLATE_URL;
+  function openNew() {
+    $('new-body').innerHTML = '<p>UnChalked is free. Your own site keeps your decks, syncs your progress across devices and installs on your phone. It takes about 10 minutes and a free GitHub account.</p>' +
+      '<p style="margin-top:12px"><b>Easiest: let your AI walk you through it.</b> Paste this into ChatGPT, Claude, Gemini or any AI chat:</p>' +
+      '<div class="summary" style="display:flex;gap:8px;align-items:center"><code style="flex:1;min-width:0;overflow-wrap:anywhere">' + esc(AI_LINE) + '</code><button type="button" class="btn sm" id="new-copy">Copy</button></div>' +
+      '<p style="margin-top:14px"><b>Or by hand:</b></p><ol class="small">' +
+      '<li>Sign in at <a href="https://github.com" target="_blank" rel="noopener">github.com</a>, or create a free account.</li>' +
+      '<li>Tap <b>Use this template</b> below, name your copy (for example <code>unchalked</code>), keep it <b>Public</b>, and tap <b>Create repository</b>.</li>' +
+      '<li>In your new repository open <b>Settings → Pages</b>: Source <b>Deploy from a branch</b>, branch <b>main</b>, <b>/ (root)</b>, then <b>Save</b>.</li>' +
+      '<li>About a minute later, open <code>https://YOUR-NAME.github.io/REPOSITORY-NAME/</code> and follow its <b>Get started</b> checklist.</li></ol>' +
+      '<p class="tiny muted">Just want one offline file, no account? See <a href="' + TEMPLATE_URL + '#offline-version-no-github-account" target="_blank" rel="noopener">the offline version</a>.</p><div id="new-msg"></div>';
+    $('new-tpl').href = TEMPLATE_URL + '/generate';
+    $('new-copy').onclick = function () { copy(AI_LINE).then(function (ok) { msg('new-msg', ok ? 'ok' : 'bad', ok ? 'Copied. Paste it into your AI chat.' : 'Couldn’t copy. Select the line above instead.'); }); };
+    var d = $('dlg-new'); if (!d.open) d.showModal();
+  }
+  $('newhere-btn').addEventListener('click', openNew); $('newhere-foot').addEventListener('click', openNew);
+  /* the top link only for someone who looks new in this browser: no token and nothing studied here yet (the demo site has its own welcome card) */
+  function renderNewHere() {
+    var studied = siteDecks().some(function (x) { return progressOf(x.info.id).answers > 0; });
+    $('newhere-btn').hidden = IS_UPSTREAM || !!syncCfg() || studied;
+  }
+
+  /* ---------- first-run checklist ---------- */
+  var CL = 'launcher:checklist:' + REPO, PROMPT = '';
+  function isIOS() { return /iPhone|iPad|iPod/i.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1); }
+  function isMobile() { return isIOS() || /Android/i.test(navigator.userAgent); }
+  function isStandalone() { return window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches); }
+  function promptUrls() { var u = [UPSTREAM + 'DECK_PROMPT.md']; if (UPSTREAM !== new URL('./', location.href).href) u.push('DECK_PROMPT.md'); return u; }
+  function loadPrompt() {   /* fetched ahead of time: iPhones only allow copying right inside the tap */
+    if (PROMPT) return Promise.resolve(PROMPT);
+    var urls = promptUrls();
+    function next(k) {
+      if (k >= urls.length) return '';
+      return fetch(urls[k], { cache: 'no-cache' }).then(function (r) { return r.ok ? r.text() : ''; }, function () { return ''; }).then(function (t) { if (t && /Deck Builder Prompt/.test(t)) { PROMPT = t; return t; } return next(k + 1); });
+    }
+    return next(0);
+  }
+  function copyPrompt() {
+    if (!PROMPT) { loadPrompt().then(function (t) { $('status').textContent = t ? 'Prompt loaded. Tap Copy AI deck prompt again.' : 'Couldn’t load the deck prompt. Check your connection.'; }); return; }
+    copy(PROMPT).then(function (ok) {
+      $('status').textContent = ok ? 'Deck prompt copied. Paste it into any AI chat, add your class materials, then paste the JSON it gives you into Add a deck.' : 'Your browser blocked copying. Open the prompt with the link under the button instead.';
+    });
+  }
+  function renderChecklist() {
+    var box = $('checklist'), hidden = false;
+    if (IS_UPSTREAM) {   /* the template's own demo site: visitors can't use its token or Add a deck, so welcome them instead */
+      box.hidden = false;
+      box.innerHTML = '<h2 id="cl-h">Welcome to the UnChalked demo</h2><p class="small" style="margin:0 0 10px">Try the demo deck below. To make decks from your own class materials, get your own free UnChalked site: about 10 minutes with a free GitHub account, or let your AI walk you through it.</p>' +
+        '<div class="row"><button type="button" class="btn sm primary" data-cl="new">Get your own UnChalked</button><a class="btn sm" href="' + TEMPLATE_URL + '" target="_blank" rel="noopener">About UnChalked</a></div>';
+      return;
+    }
+    try { hidden = localStorage.getItem(CL) === 'hidden'; } catch (e) {}
+    var token = !!syncCfg(), deck = siteDecks().some(function (x) { return x.info.id && x.info.id !== 'demo-deck'; }), home = isStandalone();
+    var steps = [
+      { done: token, t: 'Connect your GitHub token', p: home && !token ? 'The home-screen app keeps its own storage, so paste your token once in here too.' : 'Turns on sync across devices and adding decks from here.', b: '<button type="button" class="btn sm primary" data-cl="token">' + (token ? 'Token' : 'Set up') + '</button>' },
+      { done: deck, t: 'Make your first deck', p: 'Copy the deck prompt, paste it into any AI chat (ChatGPT, Claude, Gemini…) with your class materials, then paste the JSON it gives you into Add a deck.',
+        b: '<button type="button" class="btn sm" data-cl="prompt">Copy AI deck prompt</button> <button type="button" class="btn sm" data-cl="add">Add a deck</button><p class="tiny" style="margin:6px 0 0"><a href="' + esc(promptUrls()[0]) + '" target="_blank" rel="noopener">Open the prompt as a page</a></p>' }
+    ];
+    if (isMobile()) steps.push({ done: home, t: 'Add UnChalked to your home screen', p: isIOS() ? 'In Safari, tap Share, then Add to Home Screen. Open it from there from now on.' : 'In Chrome, open the ⋮ menu, then Add to Home screen (or Install app).', b: '' });
+    var all = steps.every(function (s) { return s.done; });
+    box.hidden = hidden || all;
+    if (box.hidden) return;
+    box.innerHTML = '<h2 id="cl-h">Get started</h2><ol class="steps">' + steps.map(function (s, k) {
+      return '<li class="' + (s.done ? 'done' : '') + '"><span class="n" aria-hidden="true">' + (s.done ? '✓' : k + 1) + '</span><div><b>' + esc(s.t) + '</b>' + (s.done ? ' <span class="sr-only">(done)</span>' : '<p>' + esc(s.p) + '</p>' + s.b) + '</div></li>';
+    }).join('') + '</ol><p class="tiny muted" style="margin:10px 0 0"><button type="button" class="linkbtn" data-cl="hide">Hide this checklist</button></p>';
+    if (!deck) loadPrompt();
+  }
+  $('checklist').addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-cl]'); if (!b) return;
+    var k = b.getAttribute('data-cl');
+    if (k === 'token') openToken(false); else if (k === 'prompt') copyPrompt(); else if (k === 'add') openAdd(); else if (k === 'new') openNew();
+    else if (k === 'hide') { try { localStorage.setItem(CL, 'hidden'); } catch (er) {} renderChecklist(); }
+  });
+
+  /* ---------- template updates: this site follows the UnChalked template ---------- */
+  var UPD = 'launcher:update:' + REPO;
+  function updState() { try { return JSON.parse(localStorage.getItem(UPD)) || {}; } catch (e) { return {}; } }
+  function checkTemplate(force) {
+    if (IS_UPSTREAM) { renderUpdate(); return; }
+    var st = updState();
+    if (!force && st.checkedAt && Date.now() - st.checkedAt < 6 * 3600e3) { renderUpdate(); return; }
+    fetch(UPSTREAM + 'version.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (v) {
+      if (v && v.app && v.launcher) { try { localStorage.setItem(UPD, JSON.stringify({ checkedAt: Date.now(), v: v })); } catch (e) {} }
+      renderUpdate();
+    }).catch(function () { renderUpdate(); });
+  }
+  function updateInfo() {
+    var v = updState().v; if (!v || IS_UPSTREAM) return null;
+    var decks = siteDecks().filter(function (x) { return x.info.version && vnum(x.info.version) < vnum(v.app); });
+    var launcher = vnum(v.launcher) > vnum(LAUNCHER_VERSION);
+    return decks.length || launcher ? { v: v, decks: decks, launcher: launcher } : null;
+  }
+  var updBusy = false;
+  function renderUpdate(note) {
+    var box = $('updbar'), u = updateInfo();
+    if (!u && !note) { box.hidden = true; return; }
+    box.hidden = false;
+    if (!u) { box.innerHTML = '<h2>UnChalked update</h2><p class="small" style="margin:0">' + note + '</p>'; return; }
+    var what = [];
+    if (u.decks.length) what.push('the app in ' + plural(u.decks.length, 'deck') + ' (to v' + esc(u.v.app) + ')');
+    if (u.launcher) what.push('this launcher (to ' + esc(u.v.launcher) + ')');
+    box.innerHTML = '<h2>UnChalked update available</h2><p class="small" style="margin:0 0 4px">Updates ' + what.join(' and ') + '. Your decks’ content and your progress don’t change.</p>' +
+      (Array.isArray(u.v.notes) && u.v.notes.length ? '<p class="small" style="margin:6px 0 0"><b>What’s new</b></p><ul>' + u.v.notes.slice(0, 6).map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>' : '') +
+      '<div class="row"><button type="button" class="btn sm primary" id="upd-go"' + (updBusy ? ' disabled' : '') + '>' + (updBusy ? 'Updating…' : 'Update now') + '</button>' + (note ? '<span class="small">' + note + '</span>' : '') + '</div>';
+    $('upd-go').onclick = runUpdate;
+  }
+  function getBytes(url) { return fetch(url, { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('Couldn’t download ' + url.split('/').pop() + ' from the template.'); return r.arrayBuffer(); }).then(function (b) { return new Uint8Array(b); }); }
+  function runUpdate() {
+    var u = updateInfo(); if (!u || updBusy) return;
+    if (needToken()) return;
+    var cfg = syncCfg(), v = u.v, appText = '', done = 0, nextLauncher = '';
+    updBusy = true; renderUpdate('Downloading the new version…');
+    var step = function (msg) { renderUpdate(esc(msg)); };
+    var put = function (name, b64content, message) {
+      return shaOf(name, cfg.token).then(function (sha) {
+        var body = { message: message, content: b64content, branch: BRANCH }; if (sha) body.sha = sha;
+        return gh('/repos/' + REPO + '/contents/' + encodeURIComponent(name), { method: 'PUT', token: cfg.token, body: body });
+      }).then(function (r) { if (r.status !== 200 && r.status !== 201) throw new Error(writeErr(r)); return r; });
+    };
+    var chain = fetch(UPSTREAM + v.appFile, { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('Couldn’t download the new app from the template.'); return r.text(); }).then(function (t) {
+      if (!DECK_RE.test(t) || t.indexOf("var VERSION = '" + v.app + "'") < 0) throw new Error('The template’s app file looks wrong; nothing was changed.');
+      appText = t;
+    });
+    u.decks.forEach(function (x) {   /* one at a time: each save is its own commit */
+      chain = chain.then(function () {
+        step('Updating ' + x.name + ' (' + (++done) + ' of ' + u.decks.length + ')…');
+        return fetch(encodeURI(x.name), { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : ''; }).then(function (t) {
+          var d = t && deckOf(t); if (!d) return;   /* unreadable deck: leave it alone */
+          var html = buildHtml(appText, d);
+          return put(x.name, b64(html), 'Update ' + x.name + ' to UnChalked v' + v.app).then(function (r) {
+            var c = load(); if (c && c.decks[x.name]) { c.decks[x.name] = { sha: r.json && r.json.content ? r.json.content.sha : '', info: parse(x.name, html) }; save(c); }
+          });
+        });
+      });
+    });
+    if (u.launcher) {
+      (Array.isArray(v.files) ? v.files : []).filter(function (f) { return /^[\w.-]+$/.test(f) && f !== 'index.html' && f !== 'version.json'; }).forEach(function (f) {
+        chain = chain.then(function () {
+          step('Updating ' + f + '…');
+          return Promise.all([getBytes(UPSTREAM + f), fetch(f, { cache: 'no-store' }).then(function (r) { return r.ok ? r.arrayBuffer() : null; }, function () { return null; })]).then(function (got) {
+            var up = b64bytes(got[0]), mine = got[1] ? b64bytes(new Uint8Array(got[1])) : '';
+            if (up !== mine) return put(f, up, 'Update ' + f + ' from the UnChalked template');
+          });
+        });
+      });
+      chain = chain.then(function () {   /* the launcher itself goes last */
+        step('Updating this launcher…');
+        return getBytes(UPSTREAM + 'index.html').then(function (bytes) {
+          nextLauncher = new TextDecoder().decode(bytes);
+          if (nextLauncher.indexOf('studytool-launcher') < 0) throw new Error('The template’s launcher looks wrong; the rest was updated.');
+          return put('index.html', b64bytes(bytes), 'Update the launcher to ' + v.launcher + ' from the UnChalked template');
+        });
+      });
+    }
+    chain.then(function () {
+      updBusy = false;
+      try { var st = updState(); st.applied = v.launcher + '/' + v.app; localStorage.setItem(UPD, JSON.stringify(st)); } catch (e) {}
+      render(load());
+      if (nextLauncher) {
+        renderUpdate('Updated. This page reloads with the new launcher in about a minute.');
+        var want = hash(nextLauncher), tries = 0;
+        (function poll() { setTimeout(function () { fetch('index.html?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.text(); }).then(function (t) { if (hash(t) === want) location.reload(); else if (++tries < 24) poll(); }, function () { if (++tries < 24) poll(); }); }, 10000); })();
+      } else { $('updbar').hidden = true; $('status').textContent = 'Updated to UnChalked v' + v.app + '. Decks go live in about a minute.'; }
+    }).catch(function (e) { updBusy = false; renderUpdate('<span style="color:var(--bad)">' + esc(e.message) + '</span>'); });
+  }
+
+  /* ---------- wiring ---------- */
+  document.addEventListener('click', function (e) { var t = e.target.closest && e.target.closest('[data-close]'); if (t) { var d = t.closest('dialog'); if (d) d.close(); } });
+  $('sync-btn').addEventListener('click', function () { openToken(false); });
+  $('add-deck').addEventListener('click', function () { openAdd(); });
+  $('dlg-token').addEventListener('close', function () { renderSync(); renderChecklist(); renderNewHere(); });
+  var cached = load();
+  if (cached) render(cached, plural(cached.files.length, 'file') + ' · checked ' + ago(cached.at));
+  if (IS_UPSTREAM) { $('add-deck').hidden = true; $('syncbar').hidden = true; }   /* the template's demo site: visitors can't add decks or sync there */
+  renderSync(); refreshBranch(); renderChecklist(); renderNewHere(); renderUpdate();
+  $('ver-line').textContent = 'Launcher ' + LAUNCHER_VERSION;
+  $('refresh').addEventListener('click', function () { refresh(true).then(function () { checkUpdates(true); checkTemplate(true); }); });
+  window.addEventListener('pageshow', function (e) { if (e.persisted) { var c = load(); if (c) render(c); renderSync(); } });   /* back from a deck: refresh "Studied" times and sync status */
+  refresh(false).then(function () { checkUpdates(false); checkTemplate(false); });
+})();
+</script>
+</body>
+</html>
